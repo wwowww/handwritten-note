@@ -3,10 +3,10 @@ import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 
 GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
 
-export default function useCanvasRenderer(
+const useCanvasRenderer = (
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   file: File | null
-) {
+) => {
   useEffect(() => {
     if (!file || !canvasRef.current) return;
 
@@ -51,3 +51,5 @@ export default function useCanvasRenderer(
     };
   }, [file]);
 }
+
+export default useCanvasRenderer;
