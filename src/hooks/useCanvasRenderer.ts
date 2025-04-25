@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import { usePdfStore } from '@/stores/usePdfStore';
 
 GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
 
@@ -7,6 +8,8 @@ const useCanvasRenderer = (
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   file: File | null
 ) => {
+  const { pageNumber, setTotalPages } = usePdfStore();
+
   useEffect(() => {
     if (!file || !canvasRef.current) return;
 
@@ -17,39 +20,36 @@ const useCanvasRenderer = (
     const url = URL.createObjectURL(file);
 
     const render = async () => {
-      try {
-        if (file.type === 'application/pdf') {
-          const pdf = await getDocument(url).promise;
-          const page = await pdf.getPage(1);
-          const viewport = page.getViewport({ scale: 1.5 });
+      if (file.type === 'application/pdf') {
+        const pdf = await getDocument(url).promise;
+        setTotalPages(pdf.numPages);
 
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
+        const page = await pdf.getPage(pageNumber);
+        const viewport = page.getViewport({ scale: 1.5 });
 
-          await page.render({ canvasContext: ctx, viewport }).promise;
-        } else if (file.type.startsWith('image/')) {
-          const img = new Image();
-          img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-          };
-          img.onerror = () => {
-            console.error('이미지 로딩 실패');
-          };
-          img.src = url;
-        }
-      } catch (e) {
-        console.error('렌더링 오류:', e);
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport,
+        };
+
+        await page.render(renderContext).promise;
+      } else if (file.type.startsWith('image/')) {
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = url;
       }
     };
 
     render();
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [file]);
+    return () => URL.revokeObjectURL(url);
+  }, [file, canvasRef, pageNumber, setTotalPages]);
 }
 
-export default useCanvasRenderer;
+export default useCanvasRenderer
