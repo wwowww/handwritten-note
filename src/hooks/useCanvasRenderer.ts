@@ -8,7 +8,7 @@ const useCanvasRenderer = (
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   file: File | null
 ) => {
-  const { pageNumber, setTotalPages } = usePdfStore();
+  const { pageNumber, setTotalPages, resetPage } = usePdfStore();
 
   useEffect(() => {
     if (!file || !canvasRef.current) return;
@@ -20,6 +20,7 @@ const useCanvasRenderer = (
     const url = URL.createObjectURL(file);
 
     const render = async () => {
+      resetPage();
       if (file.type === 'application/pdf') {
         const pdf = await getDocument(url).promise;
         setTotalPages(pdf.numPages);
