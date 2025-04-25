@@ -1,12 +1,12 @@
-interface FileUploaderProps {
-  onFileUpload: (file: File) => void;
-}
+import { useNoteStore } from '@/stores/useNoteStore';
 
-const FileUploader = ({ onFileUpload }: FileUploaderProps) => {
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) onFileUpload(file);
-  }
+const FileUploader = () => {
+  const { setFile } = useNoteStore();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setFile(file);
+  };
 
   return (
     <input

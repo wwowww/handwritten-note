@@ -1,12 +1,10 @@
 import { useRef } from "react";
 import useCanvasRenderer from "@/hooks/useCanvasRenderer";
+import { useNoteStore } from "@/stores/useNoteStore";
 
-interface CanvasRendererProps {
-  file: File | null;
-}
-
-const CanvasRenderer = ({ file }: CanvasRendererProps) => {
+const CanvasRenderer = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { file } = useNoteStore();
 
   useCanvasRenderer(canvasRef, file);
 
