@@ -27,5 +27,5 @@ export const useDrawingStore = create<DrawingState>((set) => ({
         ? { points: [...state.points, { x, y }] }
         : {}
     ),
-  stopDraw: () => set({ isDrawing: false }),
+  stopDraw: () => set({ isDrawing: false, points: [] }),
 }));
