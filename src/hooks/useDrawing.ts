@@ -2,8 +2,8 @@ import { useDrawingStore } from '@/stores/useDrawingStore';
 import { useEffect } from 'react';
 
 const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
-  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, currentPen, refreshVersion } = useDrawingStore();
-  const pointsGroups = drawings[currentPage] || [];
+  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, refreshVersion } = useDrawingStore();
+  const strokes = drawings[currentPage] || [];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -14,22 +14,23 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = currentPen.color;
-    ctx.lineWidth = currentPen.size;
-    ctx.globalAlpha = currentPen.opacity;
-
-    pointsGroups.forEach((points) => {
-      if (points.length < 2) return;
+    strokes.forEach((stroke) => {
+      if (stroke.points.length < 2) return;
+      
       ctx.beginPath();
-      for (let i = 1; i < points.length; i++) {
-        ctx.moveTo(points[i - 1].x, points[i - 1].y);
-        ctx.lineTo(points[i].x, points[i].y);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.size;
+      ctx.globalAlpha = stroke.opacity;
+
+      for (let i = 1; i < stroke.points.length; i++) {
+        ctx.moveTo(stroke.points[i - 1].x, stroke.points[i - 1].y);
+        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
       }
       ctx.stroke();
     });
-  }, [pointsGroups, currentPage, refreshVersion, currentPen]);
+  }, [strokes, currentPage, refreshVersion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

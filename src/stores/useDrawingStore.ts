@@ -1,14 +1,25 @@
 import { create } from 'zustand';
 import { Pen, PenType, penSettings } from '@/utils/penTypes';
+import { nanoid } from 'nanoid';
 
 interface Point {
   x: number;
   y: number;
 }
 
+interface Stroke {
+  id: string;
+  page: number;
+  points: Point[];
+  color: string;
+  size: number;
+  opacity: number;
+  tool: string;
+}
+
 interface DrawingState {
   isDrawing: boolean;
-  drawings: Record<number, Point[][]>;
+  drawings: Record<number, Stroke[]>;
   currentPage: number;
   currentPen: Pen;
   refreshVersion: number;
@@ -39,32 +50,41 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   startDraw: (x, y) => {
     const { drawings, currentPage, currentPen } = get();
     const pageDrawings = drawings[currentPage] || [];
-    const newLine: Point[] = [{ x, y }];
+
+    const newStroke: Stroke = {
+      id: nanoid(),
+      page: currentPage,
+      points: [{ x, y }],
+      color: currentPen.color,
+      size: currentPen.size,
+      opacity: currentPen.opacity,
+      tool: currentPen.type,
+    };
 
     set({
       isDrawing: true,
       drawings: {
         ...drawings,
-        [currentPage]: [...pageDrawings, newLine],
+        [currentPage]: [...pageDrawings, newStroke],
       },
     });
   },
   draw: (x, y) => {
-    const { isDrawing, drawings, currentPage, currentPen } = get();
+    const { isDrawing, drawings, currentPage } = get();
     if (!isDrawing) return;
 
     const pageDrawings = drawings[currentPage] || [];
-    const updatedLines = [...pageDrawings];
+    const updatedStrokes = [...pageDrawings];
 
-    if (updatedLines.length === 0) return;
+    if (updatedStrokes.length === 0) return;
 
-    const currentLine = [...updatedLines[updatedLines.length - 1], { x, y }];
-    updatedLines[updatedLines.length - 1] = currentLine;
+    const lastStroke = updatedStrokes[updatedStrokes.length - 1];
+    lastStroke.points.push({ x, y });
 
     set({
       drawings: {
         ...drawings,
-        [currentPage]: updatedLines,
+        [currentPage]: updatedStrokes,
       },
     });
   },
