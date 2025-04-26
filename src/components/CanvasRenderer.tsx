@@ -1,18 +1,31 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import useCanvasRenderer from "@/hooks/useCanvasRenderer";
 import { useNoteStore } from "@/stores/useNoteStore";
 import useDrawing from "@/hooks/useDrawing";
+import { usePdfStore } from "@/stores/usePdfStore";
+import { useDrawingStore } from "@/stores/useDrawingStore";
 
 const CanvasRenderer = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { file } = useNoteStore();
+  const backgroundCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  useCanvasRenderer(canvasRef, file);
-  useDrawing(canvasRef);
+  const { file } = useNoteStore();
+  const { pageNumber } = usePdfStore();
+  const { setPage } = useDrawingStore();
+
+  useEffect(() => {
+    setPage(pageNumber);
+  }, [pageNumber]);
+
+  useCanvasRenderer(backgroundCanvasRef, drawingCanvasRef, file);
+  useDrawing(drawingCanvasRef);
 
   return (
-    <canvas ref={canvasRef} className="max-w-full h-auto" />
-  )
-}
+    <div className="relative w-full h-auto mx-auto">
+      <canvas ref={backgroundCanvasRef} className="absolute top-0 left-0 z-0  w-full" />
+      <canvas ref={drawingCanvasRef} className="absolute top-0 left-0 z-10  w-full" />
+    </div>
+  );
+};
 
-export default CanvasRenderer
+export default CanvasRenderer;

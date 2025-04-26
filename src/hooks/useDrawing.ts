@@ -2,7 +2,8 @@ import { useDrawingStore } from '@/stores/useDrawingStore';
 import { useEffect } from 'react';
 
 const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
-  const { isDrawing, points, startDraw, draw, stopDraw } = useDrawingStore();
+  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, refreshVersion } = useDrawingStore();
+  const pointsGroups = drawings[currentPage] || [];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -11,22 +12,23 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const drawLine = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+
+    pointsGroups.forEach((points) => {
       if (points.length < 2) return;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 1; i < points.length; i++) {
         ctx.moveTo(points[i - 1].x, points[i - 1].y);
         ctx.lineTo(points[i].x, points[i].y);
       }
       ctx.stroke();
-    };
-
-    drawLine();
-  }, [points]);
+    });
+  }, [pointsGroups, currentPage, refreshVersion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,6 +61,6 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [canvasRef, isDrawing, startDraw, draw, stopDraw]);
-}
+};
 
 export default useDrawing;
