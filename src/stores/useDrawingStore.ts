@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Pen, PenType, penSettings } from '@/utils/penTypes';
 
 interface Point {
   x: number;
@@ -9,12 +10,14 @@ interface DrawingState {
   isDrawing: boolean;
   drawings: Record<number, Point[][]>;
   currentPage: number;
+  currentPen: Pen;
   refreshVersion: number;
   triggerRefresh: () => void;
+  setPage: (page: number) => void;
+  setPen: (pen: Pen) => void;
   startDraw: (x: number, y: number) => void;
   draw: (x: number, y: number) => void;
   stopDraw: () => void;
-  setPage: (page: number) => void;
   resetAll: () => void;
 }
 
@@ -22,6 +25,7 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   isDrawing: false,
   drawings: {},
   currentPage: 1,
+  currentPen: penSettings[PenType.BALLPOINT],
   refreshVersion: 0,
   triggerRefresh: () => {
     set((state) => ({ refreshVersion: state.refreshVersion + 1 }));
@@ -29,8 +33,11 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   setPage: (page) => {
     set({ currentPage: page });
   },
+  setPen: (pen) => {
+    set({ currentPen: pen });
+  },
   startDraw: (x, y) => {
-    const { drawings, currentPage } = get();
+    const { drawings, currentPage, currentPen } = get();
     const pageDrawings = drawings[currentPage] || [];
     const newLine: Point[] = [{ x, y }];
 
@@ -43,7 +50,7 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
     });
   },
   draw: (x, y) => {
-    const { isDrawing, drawings, currentPage } = get();
+    const { isDrawing, drawings, currentPage, currentPen } = get();
     if (!isDrawing) return;
 
     const pageDrawings = drawings[currentPage] || [];

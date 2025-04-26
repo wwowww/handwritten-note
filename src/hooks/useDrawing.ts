@@ -2,7 +2,7 @@ import { useDrawingStore } from '@/stores/useDrawingStore';
 import { useEffect } from 'react';
 
 const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
-  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, refreshVersion } = useDrawingStore();
+  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, currentPen, refreshVersion } = useDrawingStore();
   const pointsGroups = drawings[currentPage] || [];
 
   useEffect(() => {
@@ -16,8 +16,9 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
 
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = currentPen.color;
+    ctx.lineWidth = currentPen.size;
+    ctx.globalAlpha = currentPen.opacity;
 
     pointsGroups.forEach((points) => {
       if (points.length < 2) return;
@@ -28,7 +29,7 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
       }
       ctx.stroke();
     });
-  }, [pointsGroups, currentPage, refreshVersion]);
+  }, [pointsGroups, currentPage, refreshVersion, currentPen]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
