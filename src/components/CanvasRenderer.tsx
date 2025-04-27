@@ -11,9 +11,26 @@ const CanvasRenderer = () => {
   const backgroundCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { file } = useNoteStore();
+  const { file, setFile } = useNoteStore();
   const { pageNumber } = usePdfStore();
   const { setPage } = useDrawingStore();
+
+  useEffect(() => {
+    const loadDefaultFile = async () => {
+      if (!file) {
+        try {
+          const response = await fetch("/newspaper-template.png");
+          const blob = await response.blob();
+          const defaultFile = new File([blob], "newspaper-template.png", { type: blob.type });
+          setFile(defaultFile);
+        } catch (error) {
+          console.error("디폴트 파일을 불러오는 데 실패했습니다", error);
+        }
+      }
+    };
+
+    loadDefaultFile();
+  }, [file, setFile]);
 
   useEffect(() => {
     setPage(pageNumber);
