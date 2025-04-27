@@ -26,7 +26,7 @@ const PenSelector = () => {
           <img
             src={penTypeImageMap[penType]}
             alt={penType}
-            className={`${selectedPen === penType ? '' : 'opacity-60'} w-5 h-5 relative`}
+            className={`${selectedPen === penType ? '' : 'opacity-40'} w-5 h-5 relative`}
           />
         </button>
       ))}
