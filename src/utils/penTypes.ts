@@ -32,7 +32,7 @@ export const penSettings: Record<PenType, Pen> = {
   },
   [PenType.HIGHLIGHTER]: {
     type: PenType.HIGHLIGHTER,
-    color: '#FFEB3B',
+    color: '#000000',
     size: 10,
     opacity: 0.2,
     lineCap: 'butt',
