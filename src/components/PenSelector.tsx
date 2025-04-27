@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { useDrawingStore } from '@/stores/useDrawingStore';
 import { PenType, penSettings } from '@/utils/penTypes';
 
+const penTypeImageMap: Record<PenType, string> = {
+  [PenType.BALLPOINT]: '/src/assets/ball-point.png',
+  [PenType.HIGHLIGHTER]: '/src/assets/marker-pen.png',
+};
+
 const PenSelector = () => {
   const { setPen } = useDrawingStore();
   const [selectedPen, setSelectedPen] = useState<PenType>(PenType.BALLPOINT);
@@ -12,19 +17,19 @@ const PenSelector = () => {
   };
 
   return (
-    <div className="fixed top-15 left-1 z-30">
-      <button
-        className={`${selectedPen === PenType.BALLPOINT ? 'bg-red-400' : 'bg-white'}`}
-        onClick={() => handlePenChange(PenType.BALLPOINT)}
-      >
-        볼펜
-      </button>
-      <button
-        className={`${selectedPen === PenType.HIGHLIGHTER ? 'bg-red-400' : 'bg-white'}`}
-        onClick={() => handlePenChange(PenType.HIGHLIGHTER)}
-      >
-        형광펜
-      </button>
+    <div className='flex gap-1 p-2'>
+      {Object.values(PenType).map((penType) => (
+        <button
+          key={penType}
+          onClick={() => handlePenChange(penType)}
+        >
+          <img
+            src={penTypeImageMap[penType]}
+            alt={penType}
+            className={`${selectedPen === penType ? '' : 'opacity-60'} w-5 h-5 relative`}
+          />
+        </button>
+      ))}
     </div>
   );
 };
