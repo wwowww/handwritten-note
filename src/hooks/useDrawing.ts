@@ -12,7 +12,15 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, rect.width, rect.height);
 
     strokes.forEach((stroke) => {
       if (stroke.points.length < 2) return;
@@ -24,9 +32,16 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
       ctx.lineWidth = stroke.size;
       ctx.globalAlpha = stroke.opacity;
 
+      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+      
       for (let i = 1; i < stroke.points.length; i++) {
-        ctx.moveTo(stroke.points[i - 1].x, stroke.points[i - 1].y);
-        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        const prev = stroke.points[i - 1];
+        const current = stroke.points[i];
+    
+        const midX = (prev.x + current.x) / 2;
+        const midY = (prev.y + current.y) / 2;
+    
+        ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
       }
       ctx.stroke();
     });
