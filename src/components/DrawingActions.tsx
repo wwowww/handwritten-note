@@ -23,7 +23,7 @@ const DrawingActions = () => {
           : ''
           }`}
       >
-        <img src="/src/assets/arrow.svg" alt="앞으로가기" className="w-5 h-5" />
+        <img src="/arrow.svg" alt="앞으로가기" className="w-5 h-5" />
       </button>
       <button
         onClick={undo}
@@ -33,7 +33,7 @@ const DrawingActions = () => {
           : ''
           }`}
       >
-        <img src="/src/assets/arrow.svg" alt="뒤로가기" className="w-5 h-5 transform scale-x-[-1]" />
+        <img src="/arrow.svg" alt="뒤로가기" className="w-5 h-5 transform scale-x-[-1]" />
       </button>
       <Bar />
       <button
@@ -44,7 +44,7 @@ const DrawingActions = () => {
           : ''
           }`}
       >
-        <img src="/src/assets/eraser.png" alt="" className="w-5 h-5" />
+        <img src="/eraser.png" alt="" className="w-5 h-5" />
       </button>
     </div>
   );

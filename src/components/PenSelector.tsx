@@ -3,8 +3,8 @@ import { useDrawingStore } from '@/stores/useDrawingStore';
 import { PenType, penSettings } from '@/utils/penTypes';
 
 const penTypeImageMap: Record<PenType, string> = {
-  [PenType.BALLPOINT]: '/src/assets/ball-point.png',
-  [PenType.HIGHLIGHTER]: '/src/assets/marker-pen.png',
+  [PenType.BALLPOINT]: '/ball-point.png',
+  [PenType.HIGHLIGHTER]: '/marker-pen.png',
 };
 
 const PenSelector = () => {

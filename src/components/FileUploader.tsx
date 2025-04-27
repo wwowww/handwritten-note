@@ -19,7 +19,7 @@ const FileUploader = () => {
         htmlFor={inputId}
         className="inline-flex items-center p-2 focus:outline-none cursor-pointer"
       >
-        <img src='/src/assets/upload-file.png' alt="파일 올리기" className='w-5' />
+        <img src='/upload-file.png' alt="파일 올리기" className='w-5' />
       </label>
       <input
         type="file"

@@ -34,7 +34,7 @@ const DownloadButton = ({ backgroundCanvasRef, drawingCanvasRef }: DownloadButto
       onClick={handleDownload}
       className="inline-flex items-center gap-2 px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
     >
-      <img src="/src/assets/download-file.png" alt="다운로드" className="w-5 h-5" />
+      <img src="/download-file.png" alt="다운로드" className="w-5 h-5" />
     </button>
   );
 };
