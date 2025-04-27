@@ -5,7 +5,7 @@ const PageControls = () => {
 
   return (
     totalPages > 1 &&
-    <div className="flex items-center gap-4 justify-center my-4">
+    <div className="flex items-center gap-4 justify-center fixed bottom-0 bg-white w-full pb-5 pt-3 z-20">
       <button onClick={prevPage} disabled={pageNumber <= 1} className="px-3 py-1 bg-gray-200 rounded">
         이전
       </button>

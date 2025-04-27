@@ -9,13 +9,13 @@ const ColorPalette = () => {
   };
 
   return (
-    <div className="flex gap-2 p-2">
+    <div className="flex gap-1.5 p-2">
       {colors.map((color) => (
         <button
           key={color}
           onClick={() => handleColorChange(color)}
-          className={`w-8 h-8 rounded-full border-2 ${currentPen.color === color ? 'border-black' : 'border-gray-300'
-            }`}
+          className={`w-5 h-5 rounded-full box-border border-[2px] ${currentPen.color === color ? 'border-gray-300' : 'border-gray-100'}`}
+
           style={{ backgroundColor: color }}
         />
       ))}

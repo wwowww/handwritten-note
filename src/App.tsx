@@ -1,11 +1,15 @@
-import './App.css'
-import CanvasBoard from '@/components/CanvasBoard'
+import Layout from '@components/Layout';
+import CanvasRenderer from '@components/CanvasRenderer'
+import PageControls from '@components/PageControls'
+import ToolBar from '@components/ToolBar';
 
 function App() {
   return (
-    <>
-      <CanvasBoard />
-    </>
+    <Layout>
+      <ToolBar />
+      <CanvasRenderer />
+      <PageControls />
+    </Layout>
   )
 }
 

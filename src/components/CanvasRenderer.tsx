@@ -22,7 +22,7 @@ const CanvasRenderer = () => {
   useDrawing(drawingCanvasRef);
 
   return (
-    <div className="relative w-full h-auto mx-auto">
+    <div className="relative w-full h-full mx-auto max-h-[500px] border border-gray-100 rounded">
       <canvas ref={backgroundCanvasRef} className="absolute top-0 left-0 z-0  w-full" />
       <canvas ref={drawingCanvasRef} className="absolute top-0 left-0 z-10  w-full" />
       <div className="absolute top-4 right-4 z-20">

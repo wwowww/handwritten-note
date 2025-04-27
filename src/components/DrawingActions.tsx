@@ -1,4 +1,5 @@
 import { useDrawingStore } from "@/stores/useDrawingStore";
+import Bar from "./ui/Bar";
 
 
 const DrawingActions = () => {
@@ -7,44 +8,43 @@ const DrawingActions = () => {
   const hasDrawingOnPage = (drawings[currentPage]?.length ?? 0) > 0;
 
   const handleClear = () => {
-    if (confirm('정말 지우시겠습니까?')) {
+    if (confirm('필기를 모두 지우시겠습니까?')) {
       clearPage();
     }
   };
 
   return (
-    <div className="flex gap-2">
-      <button
-        onClick={undo}
-        disabled={history.length === 0 || !hasDrawingOnPage}
-        className={`px-4 py-2 rounded ${history.length === 0 || !hasDrawingOnPage
-          ? 'bg-gray-300 cursor-not-allowed'
-          : 'bg-blue-500 hover:bg-blue-600 text-white'
-          }`}
-      >
-        <img src="/src/assets/arrow.svg" alt="뒤로가기" className="w-4 h-4" />
-      </button>
-
+    <div className="flex gap-2 p-2">
       <button
         onClick={redo}
         disabled={future.length === 0}
-        className={`px-4 py-2 rounded ${future.length === 0
-          ? 'bg-gray-300 cursor-not-allowed'
-          : 'bg-green-500 hover:bg-green-600 text-white'
+        className={`${future.length === 0
+          ? 'opacity-40 cursor-not-allowed'
+          : ''
           }`}
       >
-        앞으로가기
+        <img src="/src/assets/arrow.svg" alt="앞으로가기" className="w-5 h-5" />
       </button>
-
+      <button
+        onClick={undo}
+        disabled={history.length === 0 || !hasDrawingOnPage}
+        className={`${history.length === 0 || !hasDrawingOnPage
+          ? 'opacity-40 cursor-not-allowed'
+          : ''
+          }`}
+      >
+        <img src="/src/assets/arrow.svg" alt="뒤로가기" className="w-5 h-5 transform scale-x-[-1]" />
+      </button>
+      <Bar />
       <button
         onClick={handleClear}
         disabled={!hasDrawingOnPage}
-        className={`px-4 py-2 rounded ${!hasDrawingOnPage
-          ? 'bg-gray-300 cursor-not-allowed'
-          : 'bg-red-500 hover:bg-red-600 text-white'
+        className={`${!hasDrawingOnPage
+          ? 'opacity-40 cursor-not-allowed'
+          : ''
           }`}
       >
-        전체 삭제
+        <img src="/src/assets/eraser.png" alt="" className="w-5 h-5" />
       </button>
     </div>
   );
