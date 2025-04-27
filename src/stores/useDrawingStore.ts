@@ -121,7 +121,7 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   },
 
   undo: () => {
-    const { history, drawings } = get();
+    const { history } = get();
     if (history.length === 0) return;
 
     const previous = history[history.length - 1];
@@ -136,7 +136,7 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   },
 
   redo: () => {
-    const { future, drawings } = get();
+    const { future } = get();
     if (future.length === 0) return;
 
     const next = future[0];
