@@ -36,35 +36,14 @@ const CanvasRenderer = () => {
     setPage(pageNumber);
   }, [pageNumber]);
 
-  useEffect(() => {
-    const resizeCanvas = () => {
-      const backgroundCanvas = backgroundCanvasRef.current;
-      const drawingCanvas = drawingCanvasRef.current;
-      if (backgroundCanvas && drawingCanvas) {
-        backgroundCanvas.width = backgroundCanvas.clientWidth;
-        backgroundCanvas.height = backgroundCanvas.clientHeight;
-        drawingCanvas.width = drawingCanvas.clientWidth;
-        drawingCanvas.height = drawingCanvas.clientHeight;
-      }
-    };
-
-    resizeCanvas();
-
-    window.addEventListener("resize", resizeCanvas);
-
-    return () => {
-      window.removeEventListener("resize", resizeCanvas);
-    };
-  }, []);
-
   useCanvasRenderer(backgroundCanvasRef, drawingCanvasRef, file);
   useDrawing(drawingCanvasRef);
 
   return (
     <>
       <div className="relative w-full h-full mx-auto max-h-minus-134 overflow-y-scroll border border-gray-100 rounded">
-        <canvas ref={backgroundCanvasRef} className="absolute top-0 left-0 z-0 w-full" />
-        <canvas ref={drawingCanvasRef} className="absolute top-0 left-0 z-10 w-full" />
+        <canvas ref={backgroundCanvasRef} className="absolute top-0 left-0 z-0  w-full" />
+        <canvas ref={drawingCanvasRef} className="absolute top-0 left-0 z-10  w-full" />
       </div>
       <div className="flex justify-end p-2 relative">
         <PageControls />
