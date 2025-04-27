@@ -5,12 +5,12 @@ const PageControls = () => {
 
   return (
     totalPages > 1 &&
-    <div className="flex items-center gap-4 justify-center fixed bottom-0 bg-white w-full pb-5 pt-3 z-20">
-      <button onClick={prevPage} disabled={pageNumber <= 1} className="px-3 py-1 bg-gray-200 rounded">
+    <div className="absolute left-[50%] t-0 translate-x-[-50%] flex items-center gap-2">
+      <button onClick={prevPage} disabled={pageNumber <= 1} className="text-sm bg-gray-100 py-1 px-2 cursor-pointer rounded-md text-gray-700">
         이전
       </button>
-      <span>{pageNumber} / {totalPages}</span>
-      <button onClick={nextPage} disabled={pageNumber >= totalPages} className="px-3 py-1 bg-gray-200 rounded">
+      <span className='text-sm'>{pageNumber} / {totalPages}</span>
+      <button onClick={nextPage} disabled={pageNumber >= totalPages} className="text-sm bg-gray-100 py-1 px-2 cursor-pointer rounded-md text-gray-700">
         다음
       </button>
     </div>

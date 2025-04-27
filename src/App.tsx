@@ -1,6 +1,5 @@
 import Layout from '@components/Layout';
 import CanvasRenderer from '@components/CanvasRenderer'
-import PageControls from '@components/PageControls'
 import ToolBar from '@components/ToolBar';
 
 function App() {
@@ -8,7 +7,6 @@ function App() {
     <Layout>
       <ToolBar />
       <CanvasRenderer />
-      <PageControls />
     </Layout>
   )
 }
