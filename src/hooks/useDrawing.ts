@@ -18,8 +18,8 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
       if (stroke.points.length < 2) return;
       
       ctx.beginPath();
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
+      ctx.lineJoin = stroke.lineJoin;
+      ctx.lineCap = stroke.lineCap;
       ctx.strokeStyle = stroke.color;
       ctx.lineWidth = stroke.size;
       ctx.globalAlpha = stroke.opacity;

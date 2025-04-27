@@ -15,6 +15,8 @@ interface Stroke {
   size: number;
   opacity: number;
   tool: string;
+  lineCap: CanvasLineCap;
+  lineJoin: CanvasLineJoin;
 }
 
 interface DrawingState {
@@ -59,6 +61,8 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
       size: currentPen.size,
       opacity: currentPen.opacity,
       tool: currentPen.type,
+      lineCap: currentPen.lineCap,
+      lineJoin: currentPen.lineJoin,
     };
 
     set({
