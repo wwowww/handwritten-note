@@ -2,8 +2,6 @@ import { useRef, useEffect } from "react";
 import useCanvasRenderer from "@/hooks/useCanvasRenderer";
 import { useNoteStore } from "@/stores/useNoteStore";
 import useDrawing from "@/hooks/useDrawing";
-import { usePdfStore } from "@/stores/usePdfStore";
-import { useDrawingStore } from "@/stores/useDrawingStore";
 import DownloadButton from "./DownloadButton";
 import PageControls from "./PageControls";
 
@@ -12,8 +10,6 @@ const CanvasRenderer = () => {
   const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const { file, setFile } = useNoteStore();
-  const { pageNumber } = usePdfStore();
-  const { setPage } = useDrawingStore();
 
   useEffect(() => {
     const loadDefaultFile = async () => {
@@ -28,13 +24,8 @@ const CanvasRenderer = () => {
         }
       }
     };
-
     loadDefaultFile();
   }, [file, setFile]);
-
-  useEffect(() => {
-    setPage(pageNumber);
-  }, [pageNumber]);
 
   useCanvasRenderer(backgroundCanvasRef, drawingCanvasRef, file);
   useDrawing(drawingCanvasRef);
@@ -42,8 +33,14 @@ const CanvasRenderer = () => {
   return (
     <>
       <div className="relative w-full h-full mx-auto max-h-minus-134 overflow-y-scroll border border-gray-100 rounded">
-        <canvas ref={backgroundCanvasRef} className="absolute top-0 left-0 z-0  w-full" />
-        <canvas ref={drawingCanvasRef} className="absolute top-0 left-0 z-10  w-full" />
+        <canvas
+          ref={backgroundCanvasRef}
+          className="absolute top-0 left-0 z-0 block"
+        />
+        <canvas
+          ref={drawingCanvasRef}
+          className="absolute top-0 left-0 z-10 block"
+        />
       </div>
       <div className="flex justify-end p-2 relative">
         <PageControls />
