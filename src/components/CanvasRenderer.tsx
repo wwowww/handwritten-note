@@ -40,7 +40,7 @@ const CanvasRenderer = () => {
 
   return (
     <>
-      <div className="relative w-full h-full mx-auto max-h-minus-134 overflow-y-scroll border border-gray-100 rounded">
+      <div className="relative w-full h-full mx-auto sm:max-h-minus-134 max-h-minus-172 overflow-y-scroll border border-gray-100 rounded">
         <canvas
           ref={backgroundCanvasRef}
           className="absolute top-0 left-0 z-0 block"

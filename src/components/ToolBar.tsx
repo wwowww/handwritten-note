@@ -6,7 +6,7 @@ import Bar from './ui/Bar';
 
 const ToolBar = () => {
   return (
-    <div className='flex justify-between items-center p-2'>
+    <div className='flex p-2 flex-col items-start sm:justify-between sm:items-center sm:flex-row'>
       <div className='flex items-center'>
         <FileUploader />
         <Bar />

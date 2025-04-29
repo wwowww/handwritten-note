@@ -8,6 +8,7 @@ export default {
       },
       maxHeight: {
         'minus-134': 'calc(100% - 134px)',
+        'minus-172': 'calc(100% - 172px)',
       }
     },
   },
