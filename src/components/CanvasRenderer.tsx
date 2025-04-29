@@ -15,9 +15,9 @@ const CanvasRenderer = () => {
     const loadDefaultFile = async () => {
       if (!file) {
         try {
-          const response = await fetch("/newspaper-template.png");
+          const response = await fetch("/newspaper-template.pdf");
           const blob = await response.blob();
-          const defaultFile = new File([blob], "newspaper-template.png", { type: blob.type });
+          const defaultFile = new File([blob], "newspaper-template.pdf", { type: blob.type });
           setFile(defaultFile);
         } catch (error) {
           console.error("디폴트 파일을 불러오는 데 실패했습니다", error);
@@ -35,11 +35,11 @@ const CanvasRenderer = () => {
       <div className="relative w-full h-full mx-auto max-h-minus-134 overflow-y-scroll border border-gray-100 rounded">
         <canvas
           ref={backgroundCanvasRef}
-          className="absolute top-0 left-0 z-0 block"
+          className="absolute top-0 left-0 z-0 block max-w-full max-h-fit"
         />
         <canvas
           ref={drawingCanvasRef}
-          className="absolute top-0 left-0 z-10 block"
+          className="absolute top-0 left-0 z-10 block max-w-full max-h-fit"
         />
       </div>
       <div className="flex justify-end p-2 relative">
