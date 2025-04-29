@@ -1,24 +1,14 @@
-import { useDrawingStore } from '@/stores/useDrawingStore';
+import { useDrawingStore, Stroke } from '@/stores/useDrawingStore';
 import { useEffect } from 'react';
 
-interface Point { x: number; y: number; }
-interface Stroke {
-  points: Point[];
-  color?: string;
-  size?: number;
-  opacity?: number;
-  lineCap?: 'butt' | 'round' | 'square';
-  lineJoin?: 'round' | 'bevel' | 'miter';
-  type?: string;
-}
-
 const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
-  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw } = useDrawingStore();
+  const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, refreshVersion } = useDrawingStore();
   const strokes: Stroke[] = drawings[currentPage] || [];
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -34,7 +24,7 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
       try {
         if (!stroke || !stroke.points || stroke.points.length < 1) return;
 
-        const isHighlighter = stroke.type === 'highlighter' || (stroke.opacity !== undefined && stroke.opacity < 1 && (stroke.size || 0) > 10);
+        const isHighlighter = stroke.tool === 'highlighter' || (stroke.opacity !== undefined && stroke.opacity < 1 && (stroke.size || 0) > 10);
 
         ctx.beginPath();
         ctx.lineJoin = stroke.lineJoin || 'round';
@@ -42,7 +32,7 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
         ctx.strokeStyle = stroke.color || '#000000';
         ctx.lineWidth = stroke.size || 2;
         ctx.globalAlpha = stroke.opacity === undefined ? 1 : stroke.opacity;
-        ctx.globalCompositeOperation = 'source-over'; // 명시적 설정 추가
+        ctx.globalCompositeOperation = 'source-over';
 
         ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
 
@@ -57,17 +47,17 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
           );
         } else {
           if (isHighlighter) {
-             for (let i = 1; i < stroke.points.length; i++) {
-                 ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-             }
+            for (let i = 1; i < stroke.points.length; i++) {
+              ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+            }
           } else {
-             for (let i = 1; i < stroke.points.length; i++) {
-                 const prev = stroke.points[i - 1];
-                 const current = stroke.points[i];
-                 const midX = (prev.x + current.x) / 2;
-                 const midY = (prev.y + current.y) / 2;
-                 ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
-             }
+            for (let i = 1; i < stroke.points.length; i++) {
+              const prev = stroke.points[i - 1];
+              const current = stroke.points[i];
+              const midX = (prev.x + current.x) / 2;
+              const midY = (prev.y + current.y) / 2;
+              ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
+            }
           }
           ctx.stroke();
         }
@@ -78,7 +68,7 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
 
     ctx.restore();
 
-  }, [strokes, currentPage, canvasRef]);
+  }, [strokes, currentPage, canvasRef, refreshVersion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

@@ -7,7 +7,7 @@ interface Point {
   y: number;
 }
 
-interface Stroke {
+export interface Stroke {
   id: string;
   page: number;
   points: Point[];
@@ -53,7 +53,11 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   },
 
   setPage: (page) => {
-    set({ currentPage: page });
+    const previousPage = get().currentPage;
+    if (page !== previousPage) {
+      set({ currentPage: page });
+      get().triggerRefresh();
+    }
   },
 
   setPen: (pen) => {
@@ -62,6 +66,7 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
 
   startDraw: (x, y) => {
     const { drawings, currentPage, currentPen, history } = get();
+    const currentDrawingsSnapshot = { ...drawings };
     const pageDrawings = drawings[currentPage] || [];
 
     const newStroke: Stroke = {
@@ -82,7 +87,7 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
         ...drawings,
         [currentPage]: [...pageDrawings, newStroke],
       },
-      history: [...history, { ...drawings }],
+      history: [...history, currentDrawingsSnapshot],
       future: [],
     });
   },
@@ -92,17 +97,26 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
     if (!isDrawing) return;
 
     const pageDrawings = drawings[currentPage] || [];
-    const updatedStrokes = [...pageDrawings];
+    if (pageDrawings.length === 0) return;
 
-    if (updatedStrokes.length === 0) return;
-
-    const lastStroke = updatedStrokes[updatedStrokes.length - 1];
-    lastStroke.points.push({ x, y });
+    const updatedPageDrawings = pageDrawings.map((stroke, index) => {
+      if (index === pageDrawings.length - 1) {
+        if (stroke.page !== currentPage) {
+            console.error(`[draw Error] Mismatch! Store currentPage=${currentPage}, but stroke.page=${stroke.page}`);
+            return stroke;
+        }
+        return {
+          ...stroke,
+          points: [...stroke.points, { x, y }]
+        };
+      }
+      return stroke;
+    });
 
     set({
       drawings: {
         ...drawings,
-        [currentPage]: updatedStrokes,
+        [currentPage]: updatedPageDrawings
       },
     });
   },
@@ -112,52 +126,40 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
   },
 
   resetAll: () => {
-    set({ 
-      drawings: {}, 
-      isDrawing: false, 
-      history: [], 
-      future: [] 
+    set({
+      drawings: {}, isDrawing: false, history: [], future: [],
+      refreshVersion: get().refreshVersion + 1,
     });
   },
 
   undo: () => {
-    const { history } = get();
+    const { history, drawings } = get();
     if (history.length === 0) return;
-
     const previous = history[history.length - 1];
     const newHistory = history.slice(0, history.length - 1);
-
     set((state) => ({
-      drawings: previous,
-      history: newHistory,
-      future: [state.drawings, ...state.future],
+      drawings: previous, history: newHistory, future: [drawings, ...state.future],
       refreshVersion: state.refreshVersion + 1,
     }));
   },
 
   redo: () => {
-    const { future } = get();
+    const { future, drawings } = get();
     if (future.length === 0) return;
-
     const next = future[0];
     const newFuture = future.slice(1);
-
     set((state) => ({
-      drawings: next,
-      history: [...state.history, state.drawings],
-      future: newFuture,
+      drawings: next, history: [...state.history, drawings], future: newFuture,
       refreshVersion: state.refreshVersion + 1,
     }));
   },
 
   clearPage: () => {
     const { drawings, currentPage, history } = get();
+    const currentDrawingsSnapshot = { ...drawings };
     const newDrawings = { ...drawings, [currentPage]: [] };
-
     set({
-      drawings: newDrawings,
-      history: [...history, { ...drawings }],
-      future: [],
+      drawings: newDrawings, history: [...history, currentDrawingsSnapshot], future: [],
       refreshVersion: get().refreshVersion + 1,
     });
   },

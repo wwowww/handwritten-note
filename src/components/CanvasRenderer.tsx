@@ -2,6 +2,8 @@ import { useRef, useEffect } from "react";
 import useCanvasRenderer from "@/hooks/useCanvasRenderer";
 import { useNoteStore } from "@/stores/useNoteStore";
 import useDrawing from "@/hooks/useDrawing";
+import { usePdfStore } from "@/stores/usePdfStore";
+import { useDrawingStore } from "@/stores/useDrawingStore";
 import DownloadButton from "./DownloadButton";
 import PageControls from "./PageControls";
 
@@ -10,6 +12,8 @@ const CanvasRenderer = () => {
   const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const { file, setFile } = useNoteStore();
+  const { pageNumber } = usePdfStore();
+  const { setPage } = useDrawingStore();
 
   useEffect(() => {
     const loadDefaultFile = async () => {
@@ -24,8 +28,12 @@ const CanvasRenderer = () => {
         }
       }
     };
-    loadDefaultFile();
+    if (file === null) loadDefaultFile();
   }, [file, setFile]);
+
+  useEffect(() => {
+    setPage(pageNumber);
+  }, [pageNumber, setPage]);
 
   useCanvasRenderer(backgroundCanvasRef, drawingCanvasRef, file);
   useDrawing(drawingCanvasRef);

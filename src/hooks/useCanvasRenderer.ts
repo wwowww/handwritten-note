@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import { usePdfStore } from '@/stores/usePdfStore';
+import { useDrawingStore } from '@/stores/useDrawingStore';
 
 GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
 
@@ -10,9 +11,20 @@ const useCanvasRenderer = (
   file: File | null
 ) => {
   const { pageNumber, totalPages, setTotalPages, setPage } = usePdfStore();
+  const { triggerRefresh } = useDrawingStore();
 
   useEffect(() => {
-    if (!file || !backgroundCanvasRef.current || !drawingCanvasRef.current) return;
+    if (!file || file.type !== 'application/pdf' || !backgroundCanvasRef.current || !drawingCanvasRef.current) {
+      const bgCanvas = backgroundCanvasRef.current;
+      const drawCanvas = drawingCanvasRef.current;
+      if(bgCanvas) bgCanvas.getContext('2d')?.clearRect(0,0,bgCanvas.width, bgCanvas.height);
+      if(drawCanvas) drawCanvas.getContext('2d')?.clearRect(0,0,drawCanvas.width, drawCanvas.height);
+      if (!file && totalPages !== 1) {
+          setTotalPages(1);
+          if (pageNumber !== 1) setPage(1);
+      }
+      return;
+    };
 
     const bgCanvas = backgroundCanvasRef.current;
     const drawCanvas = drawingCanvasRef.current;
@@ -30,16 +42,6 @@ const useCanvasRenderer = (
         let baseHeight = bgCanvas.clientHeight;
         let displayWidth = baseWidth;
         let displayHeight = baseHeight;
-
-        const isPDF = file.type === 'application/pdf';
-
-        if (!isPDF) {
-          console.warn('지원하지 않는 파일 형식입니다.');
-          bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-          const drawCtx = drawCanvas.getContext('2d');
-          drawCtx?.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-          return;
-        }
 
         const pdfData = await file.arrayBuffer();
         const pdf = await getDocument(pdfData).promise;
@@ -81,6 +83,7 @@ const useCanvasRenderer = (
         await page.render({ canvasContext: bgCtx, viewport: renderViewport }).promise;
         bgCtx.restore();
 
+        if (isMounted) triggerRefresh();
       } catch (error) {
         console.error("캔버스 렌더링 실패:", error);
         if (bgCtx && bgCanvas) {
@@ -96,7 +99,8 @@ const useCanvasRenderer = (
     return () => {
       isMounted = false;
     };
-  }, [file, pageNumber, backgroundCanvasRef, drawingCanvasRef, setTotalPages, totalPages, setPage]);
+  }, [file, pageNumber, backgroundCanvasRef, drawingCanvasRef, setTotalPages, totalPages, setPage, triggerRefresh]);
+
 };
 
 export default useCanvasRenderer;
