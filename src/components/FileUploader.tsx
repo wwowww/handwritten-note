@@ -8,8 +8,13 @@ const FileUploader = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && file.type === 'application/pdf') {
       setFile(file);
+    } else if (file) {
+      alert('PDF 파일만 업로드할 수 있습니다.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -23,7 +28,7 @@ const FileUploader = () => {
       </label>
       <input
         type="file"
-        accept=".pdf, image/*"
+        accept=".pdf, application/pdf"
         onChange={handleChange}
         className="opacity-0 absolute w-0 h-0"
         id={inputId}
