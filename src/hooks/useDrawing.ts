@@ -74,6 +74,40 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const getTouchPos = (touch: Touch) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      };
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        const { x, y } = getTouchPos(e.touches[0]);
+        startDraw(x, y);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      if (!isDrawing || e.touches.length === 0) return;
+      const { x, y } = getTouchPos(e.touches[0]);
+      draw(x, y);
+    };
+
+    const handleTouchEnd = () => {
+      if (isDrawing) {
+        stopDraw();
+      }
+    };
+
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchcancel', handleTouchEnd);
+
     const handleMouseDown = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -101,6 +135,11 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     canvas.addEventListener('mouseleave', handleMouseUpOrLeave);
 
     return () => {
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchcancel', handleTouchEnd);
+
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUpOrLeave);
