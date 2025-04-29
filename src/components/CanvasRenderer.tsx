@@ -35,11 +35,11 @@ const CanvasRenderer = () => {
       <div className="relative w-full h-full mx-auto max-h-minus-134 overflow-y-scroll border border-gray-100 rounded">
         <canvas
           ref={backgroundCanvasRef}
-          className="absolute top-0 left-0 z-0 block max-w-full max-h-fit"
+          className="absolute top-0 left-0 z-0 block"
         />
         <canvas
           ref={drawingCanvasRef}
-          className="absolute top-0 left-0 z-10 block max-w-full max-h-fit"
+          className="absolute top-0 left-0 z-10 block"
         />
       </div>
       <div className="flex justify-end p-2 relative">
