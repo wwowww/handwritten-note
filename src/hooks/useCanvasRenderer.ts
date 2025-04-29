@@ -24,13 +24,16 @@ const useCanvasRenderer = (
     const render = async () => {
       try {
         const dpr = window.devicePixelRatio || 1;
+        const maxWidthPx = 800;
+
         let baseWidth = bgCanvas.clientWidth;
         let baseHeight = bgCanvas.clientHeight;
+        let displayWidth = baseWidth;
+        let displayHeight = baseHeight;
 
         const isPDF = file.type === 'application/pdf';
-        const isImage = file.type.startsWith('image/');
 
-        if (!isPDF && !isImage) {
+        if (!isPDF) {
           console.warn('지원하지 않는 파일 형식입니다.');
           bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
           const drawCtx = drawCanvas.getContext('2d');
@@ -38,82 +41,53 @@ const useCanvasRenderer = (
           return;
         }
 
-        if (isPDF) {
-          const pdfData = await file.arrayBuffer();
-          const pdf = await getDocument(pdfData).promise;
+        const pdfData = await file.arrayBuffer();
+        const pdf = await getDocument(pdfData).promise;
+        if (!isMounted) return;
 
-          if (!isMounted) return;
+        if (totalPages !== pdf.numPages) setTotalPages(pdf.numPages);
 
-          if (totalPages !== pdf.numPages) {
-            setTotalPages(pdf.numPages);
-          }
-
-          const validPageNumber = Math.max(1, Math.min(pageNumber, pdf.numPages));
-          if (validPageNumber !== pageNumber) {
-            setPage(validPageNumber);
-            return;
-          }
-
-          const page = await pdf.getPage(validPageNumber);
-          const viewport = page.getViewport({ scale: 1.5 });
-
-          baseWidth = viewport.width;
-          baseHeight = viewport.height;
-
-          bgCanvas.width = baseWidth * dpr;
-          bgCanvas.height = baseHeight * dpr;
-          bgCanvas.style.width = `${baseWidth}px`;
-          bgCanvas.style.height = `${baseHeight}px`;
-
-          drawCanvas.width = baseWidth * dpr;
-          drawCanvas.height = baseHeight * dpr;
-          drawCanvas.style.width = `${baseWidth}px`;
-          drawCanvas.style.height = `${baseHeight}px`;
-
-          bgCtx.save();
-          bgCtx.scale(dpr, dpr);
-          await page.render({ canvasContext: bgCtx, viewport }).promise;
-          bgCtx.restore();
-
-        } else if (isImage) {
-          const url = URL.createObjectURL(file);
-          const img = new Image();
-
-          img.onload = () => {
-            if (!isMounted) { URL.revokeObjectURL(url); return; }
-
-            if (totalPages !== 1) setTotalPages(1);
-            if (pageNumber !== 1) setPage(1);
-
-            baseWidth = img.width;
-            baseHeight = img.height;
-
-            bgCanvas.width = baseWidth * dpr;
-            bgCanvas.height = baseHeight * dpr;
-            bgCanvas.style.width = `${baseWidth}px`;
-            bgCanvas.style.height = `${baseHeight}px`;
-
-            drawCanvas.width = baseWidth * dpr;
-            drawCanvas.height = baseHeight * dpr;
-            drawCanvas.style.width = `${baseWidth}px`;
-            drawCanvas.style.height = `${baseHeight}px`;
-
-            bgCtx.save();
-            bgCtx.scale(dpr, dpr);
-            bgCtx.drawImage(img, 0, 0, baseWidth, baseHeight);
-            bgCtx.restore();
-
-            URL.revokeObjectURL(url);
-          };
-
-          img.onerror = () => {
-            console.error("이미지 로드 실패");
-            if(isMounted) URL.revokeObjectURL(url);
-          }
-          img.src = url;
+        const validPageNumber = Math.max(1, Math.min(pageNumber, pdf.numPages));
+        if (validPageNumber !== pageNumber) {
+          setPage(validPageNumber);
+          return;
         }
+
+        const page = await pdf.getPage(validPageNumber);
+        const baseViewport = page.getViewport({ scale: 1.5 });
+        baseWidth = baseViewport.width;
+        baseHeight = baseViewport.height;
+
+        const aspectRatio = baseWidth / baseHeight;
+        displayWidth = Math.min(baseWidth, maxWidthPx);
+        displayHeight = displayWidth / aspectRatio;
+
+        bgCanvas.width = displayWidth * dpr;
+        bgCanvas.height = displayHeight * dpr;
+        bgCanvas.style.width = `${displayWidth}px`;
+        bgCanvas.style.height = `${displayHeight}px`;
+
+        drawCanvas.width = displayWidth * dpr;
+        drawCanvas.height = displayHeight * dpr;
+        drawCanvas.style.width = `${displayWidth}px`;
+        drawCanvas.style.height = `${displayHeight}px`;
+
+        const renderScale = displayWidth / baseViewport.width * baseViewport.scale;
+        const renderViewport = page.getViewport({ scale: renderScale });
+
+        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+        bgCtx.save();
+        bgCtx.scale(dpr, dpr);
+        await page.render({ canvasContext: bgCtx, viewport: renderViewport }).promise;
+        bgCtx.restore();
+
       } catch (error) {
         console.error("캔버스 렌더링 실패:", error);
+        if (bgCtx && bgCanvas) {
+          bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+          const drawCtx = drawCanvas.getContext('2d');
+          drawCtx?.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        }
       }
     };
 
