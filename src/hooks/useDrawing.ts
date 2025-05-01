@@ -1,11 +1,53 @@
 import { useDrawingStore, Stroke } from '@/stores/useDrawingStore';
 import { useEffect, useRef } from 'react';
+import { getStroke } from 'perfect-freehand';
+
+const drawStrokeOutline = (ctx: CanvasRenderingContext2D, outlinePoints: number[][]) => {
+  if (!outlinePoints || outlinePoints.length === 0) return;
+  ctx.beginPath();
+  ctx.moveTo(outlinePoints[0][0], outlinePoints[0][1]);
+  for (let i = 1; i < outlinePoints.length; i++) {
+    ctx.lineTo(outlinePoints[i][0], outlinePoints[i][1]);
+  }
+  ctx.closePath();
+  ctx.fill();
+};
+
+const drawSimplePreviewStroke = (ctx: CanvasRenderingContext2D, stroke: Stroke) => {
+  if (!stroke || !stroke.points || stroke.points.length < 1) return;
+  const isHighlighter = stroke.tool === 'highlighter' || (stroke.opacity !== undefined && stroke.opacity < 1 && (stroke.size || 0) > 10);
+  ctx.beginPath();
+  ctx.lineJoin = stroke.lineJoin || 'round';
+  ctx.lineCap = isHighlighter ? 'butt' : (stroke.lineCap || 'round');
+  ctx.strokeStyle = stroke.color || '#000000';
+  ctx.lineWidth = stroke.size || 2;
+  ctx.globalAlpha = stroke.opacity === undefined ? 1 : stroke.opacity;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+  if (stroke.points.length === 1) {
+    const pointSize = stroke.size || 2;
+    ctx.fillStyle = stroke.color || '#000000';
+    ctx.fillRect(stroke.points[0].x - pointSize / 2, stroke.points[0].y - pointSize / 2, pointSize, pointSize);
+  } else {
+    if (isHighlighter) {
+      for (let i = 1; i < stroke.points.length; i++) { ctx.lineTo(stroke.points[i].x, stroke.points[i].y); }
+    } else {
+      for (let i = 1; i < stroke.points.length; i++) {
+        const prev = stroke.points[i - 1]; const current = stroke.points[i];
+        const midX = (prev.x + current.x) / 2; const midY = (prev.y + current.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
+      }
+    }
+    ctx.stroke();
+  }
+};
 
 const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
   const { isDrawing, drawings, currentPage, startDraw, draw, stopDraw, refreshVersion } = useDrawingStore();
   const strokes: Stroke[] = drawings[currentPage] || [];
 
   const touchGesture = useRef<'idle' | 'drawing' | 'panning'>('idle');
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || canvas.width === 0 || canvas.height === 0) return;
@@ -20,7 +62,16 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     ctx.save();
     ctx.scale(dpr, dpr);
 
-    strokes.forEach((stroke) => {
+    const defaultOptions = {
+      size: 8,
+      thinning: 0.7,
+      smoothing: 0.5,
+      streamline: 0.5,
+      start: { taper: 0, cap: true },
+      end: { taper: 0, cap: true },
+    };
+
+    strokes.forEach((stroke, index) => {
       ctx.save();
       try {
         if (!stroke || !stroke.points || stroke.points.length < 1) return;
@@ -33,34 +84,39 @@ const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
         ctx.strokeStyle = stroke.color || '#000000';
         ctx.lineWidth = stroke.size || 2;
         ctx.globalAlpha = stroke.opacity === undefined ? 1 : stroke.opacity;
-        ctx.globalCompositeOperation = 'source-over';
+        if (!stroke || !stroke.points) return;
 
-        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        const isActiveStroke = isDrawing && index === strokes.length - 1;
 
-        if (stroke.points.length === 1) {
+        if (isActiveStroke && stroke.points.length > 0) {
+          drawSimplePreviewStroke(ctx, stroke);
+        } else if (!isActiveStroke && stroke.points.length > 1) {
+          const options = {
+            ...defaultOptions,
+            size: stroke.size || defaultOptions.size,
+          };
+          const outlinePoints = getStroke(stroke.points, options);
+          ctx.fillStyle = stroke.color || '#000000';
+          ctx.globalAlpha = stroke.opacity === undefined ? 1 : stroke.opacity;
+          ctx.globalCompositeOperation = 'source-over';
+          drawStrokeOutline(ctx, outlinePoints);
+        } else if (!isActiveStroke && stroke.points.length === 1) {
           const pointSize = stroke.size || 2;
           ctx.fillStyle = stroke.color || '#000000';
+          ctx.globalAlpha = stroke.opacity === undefined ? 1 : stroke.opacity;
           ctx.fillRect(stroke.points[0].x - pointSize / 2, stroke.points[0].y - pointSize / 2, pointSize, pointSize);
-        } else {
-          if (isHighlighter) {
-            for (let i = 1; i < stroke.points.length; i++) { ctx.lineTo(stroke.points[i].x, stroke.points[i].y); }
-          } else {
-            for (let i = 1; i < stroke.points.length; i++) {
-              const prev = stroke.points[i - 1]; const current = stroke.points[i];
-              const midX = (prev.x + current.x) / 2; const midY = (prev.y + current.y) / 2;
-            ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
-            }
-          }
-          ctx.stroke();
         }
-      } finally {
+      } catch (error) {
+          console.error("Error drawing stroke:", stroke.id ?? 'unknown', error);
+      }
+      finally {
         ctx.restore();
       }
     });
 
     ctx.restore();
 
-  }, [strokes, currentPage, canvasRef, refreshVersion]);
+  }, [strokes, currentPage, canvasRef, refreshVersion, isDrawing]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
