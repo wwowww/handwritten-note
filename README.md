@@ -1,4 +1,4 @@
-# ✏️ PDF/Image Annotation Web App
+# ✏️ PDF Annotation Web App
 
 > PDF 위에 필기를 하고, 저장/다운로드할 수 있는 웹 애플리케이션입니다.
 
